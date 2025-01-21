@@ -15,6 +15,6 @@ namespace DAL.EF.Entities
         public string UserEmail { get; set; }
         public string PasswordHash { get; set; }
 
-        public ICollection<VoteEntity> Votes { get; set; }
+        public ICollection<PollEntity> Polls { get; set; }
     }
 }

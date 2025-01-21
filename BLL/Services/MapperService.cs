@@ -18,19 +18,75 @@ namespace BLL.Services
             {
                 // Map UserEntity to CreateUserDTO
                 cfg.CreateMap<UserEntity, CreateUserDTO>()
-                    .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => src.Votes.Select(v => v.Option.Text))); // Include the relevant vote info
+                    .ForMember(dest => dest.Polls, opt => opt.MapFrom(src => src.Polls.Select(p => new CreatePollDto
+                    {
+                        PollId = p.PollId,
+                        Question = p.Question,
+                        EndDateTime = p.EndDateTime,
+                        Options = p.Options.Select(o => new CreateOptionDto
+                        {
+                            OptionId = o.OptionId,
+                            Text = o.Text
+                        }).ToList()
+                    }).ToList()));
 
-                // Map CreateUserDTO to UserEntity (for creating/updating users)
-                cfg.CreateMap<CreateUserDTO, CreateUserDTO>();
+                // Map CreateUserDTO to UserEntity
+                cfg.CreateMap<CreateUserDTO, UserEntity>()
+                    .ForMember(dest => dest.Polls, opt => opt.MapFrom(src => src.Polls.Select(p => new PollEntity
+                    {
+                        PollId = p.PollId,
+                        Question = p.Question,
+                        EndDateTime = p.EndDateTime,
+                        Options = p.Options.Select(o => new OptionEntity
+                        {
+                            OptionId = o.OptionId,
+                            Text = o.Text
+                        }).ToList()
+                    }).ToList()));
 
                 // Map PollEntity to CreatePollDto
                 cfg.CreateMap<PollEntity, CreatePollDto>()
-                    .ForMember(dest => dest.VoteCount, opt => opt.MapFrom(src => src.Votes.Count())) // Include the vote count
-                    .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
+                    .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => src.Votes.Select(v => new CreateVoteDto
+                    {
+                        VoteId = v.VoteId,
+                        OptionId = v.OptionId,
+                        IsAnonymous = v.IsAnonymous,
+                        UserId = v.UserId,
+                        Username = v.User.Username,
+                        OptionDescription = v.Option.Text,
+                        PollTitle = v.Poll.Question
+                    }).ToList()))
+                    .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options.Select(o => new CreateOptionDto
+                    {
+                        OptionId = o.OptionId,
+                        Text = o.Text,
+                        PollId = o.PollId
+                    }).ToList()));
 
-                // Map CreatePollDto to PollEntity (for creating/updating polls)
+                // Map CreatePollDto to PollEntity
                 cfg.CreateMap<CreatePollDto, PollEntity>()
-                    .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
+                    .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options.Select(o => new OptionEntity
+                    {
+                        OptionId = o.OptionId,
+                        Text = o.Text,
+                        PollId = o.PollId
+                    }).ToList()))
+                    .ForMember(dest => dest.Votes, opt => opt.MapFrom(src => src.Votes.Select(v => new VoteEntity
+                    {
+                        OptionId = v.OptionId,
+                        IsAnonymous = v.IsAnonymous,
+                        UserId = v.UserId,
+                        PollId = v.PollId
+                    }).ToList()));
+
+                // Map OptionEntity to CreateOptionDto
+                cfg.CreateMap<OptionEntity, CreateOptionDto>()
+                    .ForMember(dest => dest.VoteCount, opt => opt.MapFrom(src => src.Votes.Count()));
+                    //.ForMember(dest => dest.PollQuestion, opt => opt.MapFrom(src => src.Poll.Question));
+
+                // Map CreateOptionDto to OptionEntity
+                cfg.CreateMap<CreateOptionDto, OptionEntity>()
+                    .ForMember(dest => dest.PollId, opt => opt.MapFrom(src => src.PollId));
 
                 // Map VoteEntity to CreateVoteDto
                 cfg.CreateMap<VoteEntity, CreateVoteDto>()
@@ -38,19 +94,10 @@ namespace BLL.Services
                     .ForMember(dest => dest.OptionDescription, opt => opt.MapFrom(src => src.Option.Text))
                     .ForMember(dest => dest.PollTitle, opt => opt.MapFrom(src => src.Poll.Question));
 
-                // Map CreateVoteDto to VoteEntity (for creating votes)
+                // Map CreateVoteDto to VoteEntity
                 cfg.CreateMap<CreateVoteDto, VoteEntity>()
                     .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                     .ForMember(dest => dest.OptionId, opt => opt.MapFrom(src => src.OptionId))
-                    .ForMember(dest => dest.PollId, opt => opt.MapFrom(src => src.PollId));
-
-                // Map OptionEntity to OptionDto
-                cfg.CreateMap<OptionEntity, OptionDto>()
-                    .ForMember(dest => dest.VoteCount, opt => opt.MapFrom(src => src.Votes.Count())) // Include the vote count for each option
-                    .ForMember(dest => dest.PollQuestion, opt => opt.MapFrom(src => src.Poll.Question));
-
-                // Map OptionDto to OptionEntity (for creating/updating options)
-                cfg.CreateMap<OptionDto, OptionEntity>()
                     .ForMember(dest => dest.PollId, opt => opt.MapFrom(src => src.PollId));
             });
 
@@ -58,9 +105,9 @@ namespace BLL.Services
         }
 
         // Create Methods - Mapping DTO to Entity (for creating new records)
-        public DAL.EF.Entities.UserEntity MapCreateUser(DTOs.CreateUserDTO createUserDto)
+        public UserEntity MapCreateUser(CreateUserDTO createUserDto)
         {
-            return mapper.Map<DAL.EF.Entities.UserEntity>(createUserDto);
+            return mapper.Map<UserEntity>(createUserDto);
         }
 
         public PollEntity MapCreatePoll(CreatePollDto createPollDto)
@@ -73,15 +120,15 @@ namespace BLL.Services
             return mapper.Map<VoteEntity>(createVoteDto);
         }
 
-        public OptionEntity MapCreateOption(OptionDto optionDto)
+        public OptionEntity MapCreateOption(CreateOptionDto CreateOptionDto)
         {
-            return mapper.Map<OptionEntity>(optionDto);
+            return mapper.Map<OptionEntity>(CreateOptionDto);
         }
 
         // Read Methods - Mapping Entity to DTO (for reading records)
-        public DTOs.CreateUserDTO MapUserToCreateUserDto(DAL.EF.Entities.UserEntity userEntity)
+        public CreateUserDTO MapUserToCreateUserDto(UserEntity userEntity)
         {
-            return mapper.Map<DTOs.CreateUserDTO>(userEntity);
+            return mapper.Map<CreateUserDTO>(userEntity);
         }
 
         public CreatePollDto MapPollToCreatePollDto(PollEntity pollEntity)
@@ -94,15 +141,15 @@ namespace BLL.Services
             return mapper.Map<CreateVoteDto>(voteEntity);
         }
 
-        public OptionDto MapOptionToOptionDto(OptionEntity optionEntity)
+        public CreateOptionDto MapOptionToCreateOptionDto(OptionEntity optionEntity)
         {
-            return mapper.Map<OptionDto>(optionEntity);
+            return mapper.Map<CreateOptionDto>(optionEntity);
         }
 
         // Map a collection of entities to their corresponding DTOs (e.g., for lists)
-        public List<DTOs.CreateUserDTO> MapUserCollection(List<DAL.EF.Entities.UserEntity> userEntities)
+        public List<CreateUserDTO> MapUserCollection(List<UserEntity> userEntities)
         {
-            return mapper.Map<List<DTOs.CreateUserDTO>>(userEntities);
+            return mapper.Map<List<CreateUserDTO>>(userEntities);
         }
 
         public List<CreatePollDto> MapPollCollection(List<PollEntity> pollEntities)
@@ -115,13 +162,13 @@ namespace BLL.Services
             return mapper.Map<List<CreateVoteDto>>(voteEntities);
         }
 
-        public List<OptionDto> MapOptionCollection(List<OptionEntity> optionEntities)
+        public List<CreateOptionDto> MapOptionCollection(List<OptionEntity> optionEntities)
         {
-            return mapper.Map<List<OptionDto>>(optionEntities);
+            return mapper.Map<List<CreateOptionDto>>(optionEntities);
         }
 
         // Update Methods - Mapping DTO to Entity (for updating existing records)
-        public void MapUpdateUser(DTOs.CreateUserDTO createUserDto, DAL.EF.Entities.UserEntity userEntity)
+        public void MapUpdateUser(CreateUserDTO createUserDto, UserEntity userEntity)
         {
             mapper.Map(createUserDto, userEntity);
         }
@@ -136,9 +183,9 @@ namespace BLL.Services
             mapper.Map(createVoteDto, voteEntity);
         }
 
-        public void MapUpdateOption(OptionDto optionDto, OptionEntity optionEntity)
+        public void MapUpdateOption(CreateOptionDto CreateOptionDto, OptionEntity optionEntity)
         {
-            mapper.Map(optionDto, optionEntity);
+            mapper.Map(CreateOptionDto, optionEntity);
         }
     }
 }

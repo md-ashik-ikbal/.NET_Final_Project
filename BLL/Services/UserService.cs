@@ -47,8 +47,25 @@ namespace BLL.Services
             return mapperService.MapUserToCreateUserDto(user);
         }
 
+        //public CreateUserDTO Login(string UserEmail, string PasswordHash)
+        //{
+        //    var user = userRepo.Login(UserEmail, PasswordHash);
+
+        //    if (user == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    return mapperService.MapUserToCreateUserDto(user);
+        //}
+
         public CreateUserDTO Login(string UserEmail, string PasswordHash)
         {
+            if (string.IsNullOrEmpty(UserEmail) || string.IsNullOrEmpty(PasswordHash))
+            {
+                return null;
+            }
+
             var user = userRepo.Login(UserEmail, PasswordHash);
 
             if (user == null)

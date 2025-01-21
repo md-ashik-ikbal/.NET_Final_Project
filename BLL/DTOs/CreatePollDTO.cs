@@ -11,10 +11,10 @@ namespace BLL.DTOs
         public int PollId { get; set; }
         public string Question { get; set; }
         public DateTime EndDateTime { get; set; }
-        public bool IsAnonymous { get; set; }
+        public int UserId { get; set; } // Just the UserId, not the whole User object
 
-        // Optionally, include related options and votes (you can use DTOs for these entities too)
-        public IEnumerable<OptionDto> Options { get; set; }
-        public int VoteCount { get; set; }  // You can include the count of votes if needed
+        // You can include these if you want to return options and votes in the DTO
+        public List<CreateOptionDto> Options { get; set; }
+        public List<CreateVoteDto> Votes { get; set; }
     }
 }

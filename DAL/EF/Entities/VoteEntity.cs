@@ -13,6 +13,8 @@ namespace DAL.EF.Entities
         [Key]
         public int VoteId { get; set; }
 
+        public bool IsAnonymous { get; set; }
+
         // Foreign Key to UserEntity
         [ForeignKey("User")] // This refers to the navigation property "User", not the entity class name
         public int UserId { get; set; }

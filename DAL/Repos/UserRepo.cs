@@ -33,14 +33,14 @@ namespace DAL.Repos
         public UserEntity Login(string UserEmail, string PasswordHash)
         {
             var user = context.Users.FirstOrDefault(u => u.UserEmail == UserEmail && u.PasswordHash == PasswordHash);
-            if (user == null) 
+            if (user == null)
             {
                 return null;
             }
 
-            HttpContext.Current.Session["UserId"] = user.UserId;
+
+            //HttpContext.Current.Session["UserId"] = user.UserId;
             return user;
         }
-
     }
 }

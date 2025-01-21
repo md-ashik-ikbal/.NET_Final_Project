@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 
 namespace Final_Proj.Controllers
@@ -29,9 +30,9 @@ namespace Final_Proj.Controllers
 
         [HttpPost]
         [Route("user/login")]
-        public HttpResponseMessage Login(string UserEmail, string PasswordHash)
+        public HttpResponseMessage Login(LoginDTO loginDTO)
         {
-            return Request.CreateResponse(HttpStatusCode.OK, userService.Login(UserEmail, PasswordHash));
+            return Request.CreateResponse(HttpStatusCode.OK, userService.Login(loginDTO.UserEmail, loginDTO.PasswordHash));
         }
 
         [HttpGet]

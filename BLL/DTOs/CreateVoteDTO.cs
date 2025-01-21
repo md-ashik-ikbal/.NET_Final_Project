@@ -10,6 +10,8 @@ namespace BLL.DTOs
     {
         public int VoteId { get; set; }
 
+        public bool IsAnonymous { get; set; }
+
         // Include only the necessary properties from the related entities
         public int UserId { get; set; }
         public string Username { get; set; }  // You can include additional user information if needed

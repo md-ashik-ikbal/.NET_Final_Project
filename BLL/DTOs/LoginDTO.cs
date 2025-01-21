@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace BLL.DTOs
 {
-    public class CreateUserDTO
+    public class LoginDTO
     {
-        public int UserId { get; set; }
-        public string Username { get; set; }
         public string UserEmail { get; set; }
         public string PasswordHash { get; set; }
-        public IEnumerable<CreatePollDto> Polls { get; set; }
     }
 }
